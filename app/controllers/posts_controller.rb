@@ -1,5 +1,8 @@
 class PostsController < ApplicationController
+  before_action :authorize_request, except: [:show]
   before_action :set_post, only: [:show, :update, :destroy]
+  before_action :admin_or_owner, only: [:update, :destroy]
+  before_action :authenticate_admin, only: [:index]
 
   # GET /posts
   def index
@@ -16,7 +19,7 @@ class PostsController < ApplicationController
   # POST /posts
   def create
     @post = Post.new(post_params)
-
+    @post.user = @current_user
     if @post.save
       render json: @post, status: :created, location: @post
     else
@@ -27,6 +30,7 @@ class PostsController < ApplicationController
   # PATCH/PUT /posts/1
   def update
     if @post.update(post_params)
+      logger.debug("----#{post_params}")
       render json: @post
     else
       render json: @post.errors, status: :unprocessable_entity
@@ -46,6 +50,15 @@ class PostsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def post_params
-      params.require(:post).permit(:title, :description, :user_id)
+      params.require(:post).permit(:title, :description)
+    end
+
+    def admin_or_owner
+      return if @current_user.admin? || @post.user.id == @current_user.id
+      # if @current_user.admin? || @current_user.id == @post.user.id
+      #   return
+      # else
+      render json: { error: "Permission denied."}
+      # end
     end
 end
