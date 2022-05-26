@@ -1,4 +1,5 @@
 class FollowersController < ApplicationController
+  before_action :authorize_request
   before_action :set_follower, only: [:show, :update, :destroy]
 
   # GET /followers
@@ -16,7 +17,7 @@ class FollowersController < ApplicationController
   # POST /followers
   def create
     @follower = Follower.new(follower_params)
-
+    @follower.user_id = @current_user.id
     if @follower.save
       render json: @follower, status: :created, location: @follower
     else
@@ -46,6 +47,6 @@ class FollowersController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def follower_params
-      params.require(:follower).permit(:follower, :follow)
+      params.require(:follower).permit(:follow)
     end
 end
