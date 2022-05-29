@@ -29,8 +29,21 @@ class PostsController < ApplicationController
 
   # PATCH/PUT /posts/1
   def update
+    # TODO: implement like feature later
+
+    # if params[:post][:likes] && !params[:post][:title] && !params[:post][:description]
+    #   @post.likes += params[:post][:likes]
+    # elsif !@current_user.admin? && @post.user.id != @current_user.id
+    #   return render json: { error: "Permission denied."}
+    # end
+    # @post.likes += params[:post][:likes] if params[:post][:likes]
+    # if @post.update(post_params)
+    #   render json: @post
+    # else
+    #   render json: @post.errors, status: :unprocessable_entity
+    # end
+
     if @post.update(post_params)
-      logger.debug("----#{post_params}")
       render json: @post
     else
       render json: @post.errors, status: :unprocessable_entity
@@ -50,7 +63,7 @@ class PostsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def post_params
-      params.require(:post).permit(:title, :description)
+      params.require(:post).permit(:title, :description, :likes)
     end
 
     def admin_or_owner
@@ -61,4 +74,5 @@ class PostsController < ApplicationController
       render json: { error: "Permission denied."}
       # end
     end
+
 end

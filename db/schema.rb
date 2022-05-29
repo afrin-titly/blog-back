@@ -34,6 +34,7 @@ ActiveRecord::Schema.define(version: 2022_05_25_123323) do
     t.string "title"
     t.text "description"
     t.integer "user_id"
+    t.integer "likes", default: 0
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
   end
@@ -43,6 +44,8 @@ ActiveRecord::Schema.define(version: 2022_05_25_123323) do
     t.string "last_name"
     t.string "email"
     t.string "password_digest"
+    t.string "confirmation_token"
+    t.datetime "confirmed_at"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
   end
