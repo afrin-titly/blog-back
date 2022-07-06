@@ -1,12 +1,19 @@
 class FollowersController < ApplicationController
   before_action :authorize_request
-  before_action :set_follower, only: [:show, :update, :destroy]
+  before_action :set_follower, only: [:show, :update]
+  # before_action :authenticate_admin, except: [:create, :destroy]
 
   # GET /followers
   def index
-    @followers = Follower.all
+    # @followers = Follower.all
 
-    render json: @followers
+    # render json: @followers
+    i_am_following = @current_user.my_followers
+    my_followers = @current_user.who_follow_me
+    render json: {
+      i_am_following: i_am_following,
+      my_followers: my_followers.nil? ? [] : my_followers
+    }
   end
 
   # GET /followers/1
@@ -19,8 +26,14 @@ class FollowersController < ApplicationController
     @follower = Follower.new(follower_params)
     @follower.user_id = @current_user.id
     if @follower.save
-      render json: @follower, status: :created, location: @follower
+      render json: {
+        user: {
+          is_following: @current_user.followers_list.pluck(:follow).include?(follower_params[:follow])
+        }
+      },
+        status: :created, location: @follower
     else
+
       render json: @follower.errors, status: :unprocessable_entity
     end
   end
@@ -36,7 +49,15 @@ class FollowersController < ApplicationController
 
   # DELETE /followers/1
   def destroy
+    return unless follower_params[:follow].present?
+
+    @follower = Follower.find_by_user_id_and_follow(@current_user.id, follower_params[:follow])
     @follower.destroy
+    render json: {
+      user: {
+        is_following: @current_user.followers_list.ids.include?(follower_params[:follow])
+      }
+    }
   end
 
   private

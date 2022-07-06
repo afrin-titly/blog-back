@@ -5,9 +5,10 @@ class CommentsController < ApplicationController
 
   # GET /comments
   def index
-    @comments = Comment.all
+    @comments = Post.find(params[:post_id]).comments.order(created_at: :desc)
+    user_and_comments = Comment.get_user(@comments)
 
-    render json: @comments
+    render json: user_and_comments
   end
 
   # GET /comments/1
@@ -17,10 +18,15 @@ class CommentsController < ApplicationController
 
   # POST /comments
   def create
-    @comment = Comment.new(comment_params)
+    uc = UserComment.new(user_id: @current_user.id, post_id: comment_params[:post_id])
+    @comment = Comment.new(comment: comment_params[:comment])
     # @comment.user_id = @current_user.id
+
     if @comment.save
-      render json: @comment, status: :created, location: @comment
+      # UserComment.create(user_id: @current_user.id, post_id: comment_params[:post_id], comment_id: @comment.id)
+      uc.comment_id = @comment.id
+      uc.save
+      render json: {message: "Comment added!"}, status: :created, location: @comment
     else
       render json: @comment.errors, status: :unprocessable_entity
     end
@@ -56,7 +62,7 @@ class CommentsController < ApplicationController
       if @current_user.followers.pluck(:follow).include?(post_owner.id) || @current_user.posts.ids.include?(params[:comment][:post_id])
         return
       else
-        render json: { errors: "You have to follow the author for making comment" }, status: :unprocessable_entity
+        render json: { errors: "You have to follow the author for making comment" }, status: :forbidden
       end
     end
 end

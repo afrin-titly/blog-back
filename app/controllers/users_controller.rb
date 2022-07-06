@@ -1,19 +1,29 @@
 class UsersController < ApplicationController
   before_action :authorize_request, except: [:create, :confirm_user]
-  before_action :authenticate_admin, only: [:index, :destroy]
+  before_action :authenticate_admin, only: [:destroy]
   before_action :set_user, only: [:show, :update, :destroy]
   before_action :user?, only: [:update]
 
   # GET /users
   def index
-    @users = User.all
+    # @users = User.all
 
-    render json: @users
+    # render json: @users
+    suggest_to_follow = @current_user.suggest_to_follow
+    render json: {
+      suggest_to_follow: suggest_to_follow
+    }
+
   end
 
   # GET /users/1
   def show
-    render json: @user
+    render json: {
+      user: {
+        name: @user.first_name + " " + @user.last_name,
+        is_following: @current_user.followers_list.pluck(:follow).include?(@user.id)
+      }
+    }
   end
 
   # POST /users
@@ -24,12 +34,10 @@ class UsersController < ApplicationController
       #FIX: doesn't send actual email from localhost
       UserMailer.send_on_registration( @user.email, @user.confirmation_token).deliver_now
       render json: {
-        user: {
-          confirmation_link: users_confirmation_url(token: @user.confirmation_token)
-        }
+        message: "An email has been sent. Please confirm it."
       }, status: :created
     else
-      render json: @user.errors, status: :unprocessable_entity
+      render json: {error: @user.errors.full_messages}
     end
   end
 
@@ -41,7 +49,9 @@ class UsersController < ApplicationController
       if user
         user.confirmed_at = Time.now
         user.save
-        render json: { message: "Successfully confirmed account"}, status: :ok
+        # render json: { message: "Successfully confirmed account"}, status: :ok
+        # redirect_to "http://localhost:8080/", json: { message: "Confirmed!"}
+        render json: { location: "http://localhost:8080/login" }
       else
         render json: { message: "User not found."}, status: :unprocessable_entity
       end
@@ -81,7 +91,6 @@ class UsersController < ApplicationController
     end
 
     def user?
-      logger.debug("------#{@current_user.admin?}----#{@current_user.id}---#{@user.id}")
       return if @current_user.admin? || @current_user.id == @user.id
       render json: { error: "Permission denied."}
     end

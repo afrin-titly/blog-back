@@ -1,19 +1,36 @@
 class PostsController < ApplicationController
-  before_action :authorize_request, except: [:show]
+  before_action :authorize_request
   before_action :set_post, only: [:show, :update, :destroy]
   before_action :admin_or_owner, only: [:update, :destroy]
-  before_action :authenticate_admin, only: [:index]
+  # before_action :authenticate_admin, only: [:index]
 
   # GET /posts
   def index
-    @posts = Post.all
-
-    render json: @posts
+    if @current_user.admin?
+      @posts = Post.all.order(created_at: :desc)
+      render json: @posts
+    elsif !params[:user_id].blank? # individual users posts
+      @posts = User.find(params[:user_id]).posts
+      render json: @posts
+    else
+      followers = @current_user.followers_list # user posts whom current user follows
+      @posts = Post.followers_post(followers)
+      render json: @posts
+    end
   end
 
   # GET /posts/1
   def show
-    render json: @post
+    post = {
+      id: @post.id,
+      title: @post.title,
+      description: @post.description,
+      user_id: @post.user_id,
+      likes: @post.likes,
+      created_at: @post.created_at,
+      name: @post.user.first_name + " " + @post.user.last_name
+    }
+    render json: post
   end
 
   # POST /posts
@@ -21,7 +38,7 @@ class PostsController < ApplicationController
     @post = Post.new(post_params)
     @post.user = @current_user
     if @post.save
-      render json: @post, status: :created, location: @post
+      render json: @post.id, status: :created, location: @post
     else
       render json: @post.errors, status: :unprocessable_entity
     end

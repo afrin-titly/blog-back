@@ -1,8 +1,11 @@
 Rails.application.routes.draw do
   get '/users/confirmation', to: 'users#confirm_user'
-  # get '/users/confirmation', to: 'users#confirm_user'
   post '/auth/login', to: 'authentication#login'
+  delete '/followers/unfollow', to: 'followers#destroy'
   resources :followers
+  #  do
+  #   delete 'unfollow', to: 'followers#delete'
+  # end
   resources :posts
   resources :comments
   resources :users
