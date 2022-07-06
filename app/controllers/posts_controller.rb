@@ -69,7 +69,11 @@ class PostsController < ApplicationController
 
   # DELETE /posts/1
   def destroy
-    @post.destroy
+    if @post.destroy
+      render json: "Successfully deleted post", status: :ok
+    else
+      render json: "Post couldn't be deleted", status: :not_acceptable
+    end
   end
 
   private
