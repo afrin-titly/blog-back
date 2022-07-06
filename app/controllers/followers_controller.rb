@@ -5,9 +5,6 @@ class FollowersController < ApplicationController
 
   # GET /followers
   def index
-    # @followers = Follower.all
-
-    # render json: @followers
     i_am_following = @current_user.my_followers
     my_followers = @current_user.who_follow_me
     render json: {
@@ -26,6 +23,9 @@ class FollowersController < ApplicationController
     @follower = Follower.new(follower_params)
     @follower.user_id = @current_user.id
     if @follower.save
+      u = User.find(@follower.follow)
+      u.total_followers += 1
+      u.save
       render json: {
         user: {
           is_following: @current_user.followers_list.pluck(:follow).include?(follower_params[:follow])
@@ -52,6 +52,9 @@ class FollowersController < ApplicationController
     return unless follower_params[:follow].present?
 
     @follower = Follower.find_by_user_id_and_follow(@current_user.id, follower_params[:follow])
+    u = User.find(@follower.follow)
+    u.total_followers -= 1
+    u.save
     @follower.destroy
     render json: {
       user: {
