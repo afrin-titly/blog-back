@@ -27,10 +27,8 @@ class User < ApplicationRecord
 
   def who_follow_me
     followers = Follower.where(follow: self.id).pluck(:user_id)
-    logger.debug("-----#{followers}***")
     unless followers.nil?
       my_followers = User.find(followers).pluck(:id)
-      logger.debug("--------#{my_followers}---")
       followers_name(my_followers)
       # return my_followers.map {|f| [f[0], f[1] + " " + f[2]]}
     end
