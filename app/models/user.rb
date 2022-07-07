@@ -11,8 +11,12 @@ class User < ApplicationRecord
     id == 1
   end
 
+  def my_followers_ids
+    self.followers_list.pluck(:follow)
+  end
+
   def my_followers
-    following_ids = self.followers_list.pluck(:follow)
+    following_ids = my_followers_ids
     followers_name(following_ids)
   end
 
@@ -39,7 +43,9 @@ class User < ApplicationRecord
   end
 
   def suggest_to_follow
-    users = User.find(self.not_following).pluck(:id, :first_name, :last_name)
+    most_popular_bloggers = User.order(total_followers: :desc).ids
+    popular_not_following = most_popular_bloggers - my_followers_ids
+    users = User.find(popular_not_following).pluck(:id, :first_name, :last_name).take(10)
     list = []
     users.map{|u| list.push({id: u[0], name: u[1] + " " +u[2]})}
     return list
