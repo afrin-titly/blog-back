@@ -44,7 +44,7 @@ class User < ApplicationRecord
 
   def suggest_to_follow
     most_popular_bloggers = User.order(total_followers: :desc).ids
-    popular_not_following = most_popular_bloggers - my_followers_ids
+    popular_not_following = most_popular_bloggers - my_followers_ids - [self.id]
     users = User.find(popular_not_following).pluck(:id, :first_name, :last_name).take(10)
     list = []
     users.map{|u| list.push({id: u[0], name: u[1] + " " +u[2]})}

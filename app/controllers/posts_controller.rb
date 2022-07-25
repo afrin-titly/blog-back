@@ -6,11 +6,12 @@ class PostsController < ApplicationController
 
   # GET /posts
   def index
-    if @current_user.admin?
-      @posts = Post.all.order(created_at: :desc)
-      render json: @posts
-    elsif !params[:user_id].blank? # individual users posts
-      @posts = User.find(params[:user_id]).posts
+    # if @current_user.admin?
+    #   @posts = Post.all.order(created_at: :desc)
+    #   render json: @posts
+    # els
+    if !params[:user_id].blank? # individual users posts
+      @posts = User.find(params[:user_id]).posts.order('updated_at desc')
       render json: @posts
     else
       followers = @current_user.followers_list # user posts whom current user follows

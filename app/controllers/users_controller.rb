@@ -49,9 +49,7 @@ class UsersController < ApplicationController
       if user
         user.confirmed_at = Time.now
         user.save
-        # render json: { message: "Successfully confirmed account"}, status: :ok
-        # redirect_to "http://localhost:8080/", json: { message: "Confirmed!"}
-        render json: { location: "http://localhost:8080/login" }
+        redirect_to "http://localhost:8080/login?confirmed=true"
       else
         render json: { message: "User not found."}, status: :unprocessable_entity
       end

@@ -6,7 +6,6 @@ class AuthenticationController < ApplicationController
 
     if @user&.authenticate(params[:password])
       token = JsonWebToken.encode(email: @user.email)
-      time = Time.now + 1.hour.to_i
       render json: {
         token: token,
         name: @user.first_name + " " + @user.last_name,
