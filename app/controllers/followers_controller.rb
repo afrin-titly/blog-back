@@ -23,9 +23,9 @@ class FollowersController < ApplicationController
     @follower = Follower.new(follower_params)
     @follower.user_id = @current_user.id
     if @follower.save
-      u = User.find(@follower.follow)
-      u.total_followers += 1
-      u.save
+      # u = User.find(@follower.follow)
+      # u.total_followers += 1
+      # u.save
       render json: {
         user: {
           is_following: @current_user.followers_list.pluck(:follow).include?(follower_params[:follow])
